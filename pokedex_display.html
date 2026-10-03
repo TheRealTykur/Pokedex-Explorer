@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Pokedex Explorer: Stat Comparison</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+  <link rel="stylesheet" href="pokedex_styles.css">
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1>Pokedex Stat Explorer</h1>
+
+    <p>
+      Each circle is one Pokemon. Color encodes primary type. Pick which stats
+      map to the X and Y axes below, and hover a circle for details.
+    </p>
+
+    <div id="controls">
+      <label>
+        X-axis:
+        <select id="xSelect"></select>
+      </label>
+
+      <label>
+        Y-axis:
+        <select id="ySelect"></select>
+      </label>
+
+      <label>
+        Dot Size:
+        <select id="zSelect"></select>
+      </label>
+    </div>
+
+    <svg id="chart" width="800" height="500"></svg>
+
+    <div id="legend"></div>
+
+  </div>
+
+  <div id="tooltip" class="hidden"></div>
+
+  <script src="pokedex_code.js"></script>
+
+</body>
+</html>
