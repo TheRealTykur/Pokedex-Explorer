@@ -43,3 +43,8 @@ Then open <http://localhost:8000/pokedex_display.html>.
 
 - HTML, CSS, JavaScript
 - D3.js v7 (loaded from the jsDelivr CDN)
+
+## TODO
+
+- [ ] **Update Data Set**
+  - Could be a more robust dataset.  Would like to add the evolution as a field.  
