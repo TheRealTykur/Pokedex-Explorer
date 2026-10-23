@@ -3,51 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Pokedex Explorer: Stat Comparison</title>
-
+  <title>Pokedex Explorer v2</title>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-
   <link rel="stylesheet" href="pokedex_styles.css">
 </head>
-
 <body>
+<div id="container">
+  <h1>Pokedex Explorer v2</h1>
+  <p>Shared filters (generation, type legend) apply to all three charts. Hover any mark for details.</p>
 
-  <div id="container">
-
-    <h1>Pokedex Stat Explorer</h1>
-
-    <p>
-      Each circle is one Pokemon. Color encodes primary type. Pick which stats
-      map to the X and Y axes below, and hover a circle for details.
-    </p>
-
-    <div id="controls">
-      <label>
-        X-axis:
-        <select id="xSelect"></select>
-      </label>
-
-      <label>
-        Y-axis:
-        <select id="ySelect"></select>
-      </label>
-
-      <label>
-        Dot Size:
-        <select id="zSelect"></select>
-      </label>
-    </div>
-
-    <svg id="chart" width="800" height="500"></svg>
-
-    <div id="legend"></div>
-
+  <div id="controls">
+    <label>Generation: <select id="genSelect"></select></label>
   </div>
+  <p id="status"></p>
+  <div id="legend"></div>
 
-  <div id="tooltip" class="hidden"></div>
+  <h2>1. Scatterplot (Project 2)</h2>
+  <div class="controls">
+    <label>X: <select id="xSelect"></select></label>
+    <label>Y: <select id="ySelect"></select></label>
+    <label>Dot size: <select id="zSelect"></select></label>
+  </div>
+  <svg id="scatter"></svg>
 
-  <script src="pokedex_code.js"></script>
+  <h2>2. Average by primary type (Project 3)</h2>
+  <div class="controls">
+    <label>Stat: <select id="statSelect"></select></label>
+    <label>Mark: <select id="markSelect"><option value="bars">Bars</option><option value="dots">Dot plot</option></select></label>
+    <label>Sort: <select id="sortSelect"><option value="value">By value</option><option value="alpha">Alphabetical</option></select></label>
+  </div>
+  <svg id="bar"></svg>
 
+  <h2>3. Histogram of the selected stat (Project 4)</h2>
+  <div class="controls">
+    <label>Bins (approx.): <input type="range" id="binRange" min="3" max="40" value="15"> <span id="binLabel">15</span></label>
+  </div>
+  <p id="histStatus"></p>
+  <svg id="hist"></svg>
+</div>
+<div id="tooltip" class="hidden"></div>
+<script src="pokedex_code.js"></script>
 </body>
 </html>
