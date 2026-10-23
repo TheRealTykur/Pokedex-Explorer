@@ -1,5 +1,7 @@
 # Pokédex Explorer v2
 
+https://therealtykur.github.io/Pokedex-Explorer/
+
 ## Project purpose
 
 Pokédex Explorer is an interactive data-visualization project built with **D3.js**. It lets users explore Pokémon statistics, compare average statistics across primary Pokémon types, and examine the distribution of a selected statistic. The charts share filters so that users can narrow the dataset and compare the same subset across different visualizations.
