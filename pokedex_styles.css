@@ -17,3 +17,9 @@ svg { width: 100%; height: auto; background: #fff; border: 1px solid #ddd; }
 #tooltip { position: absolute; background: #fff; border: 1px solid #888; padding: 6px 8px; font-size: 13px; pointer-events: none; }
 #tooltip.hidden { display: none; }
 #status, #histStatus { font-size: 13px; color: #555; }
+button { font: inherit; padding: 3px 10px; cursor: pointer; border: 1px solid #888; border-radius: 4px; background: #fff; }
+button:hover { background: #eee; }
+.bubble circle { stroke: rgba(0, 0, 0, 0.25); stroke-width: 1px; fill-opacity: 0.85; }
+.bubble:hover circle { stroke: #222; stroke-width: 2px; }
+.bubble-label { fill: #222; text-anchor: middle; pointer-events: none; font-weight: bold; }
+#bubbleStatus { font-size: 13px; color: #555; }
