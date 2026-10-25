@@ -4,49 +4,70 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pokedex Explorer v2</title>
+  <!-- D3 v7 from a CDN: powers every chart (loading, scales, axes, transitions, pack layout) -->
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <link rel="stylesheet" href="pokedex_styles.css">
 </head>
 <body>
+<!-- All page content sits in one centered column. The JS fills in every empty element below. -->
 <div id="container">
   <h1>Pokedex Explorer v2</h1>
   <p>Shared filters (generation, type legend) apply to all four charts. Hover any mark for details.</p>
 
+  <!-- ===== Shared filters (apply to ALL charts) ===== -->
   <div id="controls">
+    <!-- Options are generated from the CSV: "All generations", Generation 1, 2, ... -->
     <label>Generation: <select id="genSelect"></select></label>
   </div>
+  <!-- Status line, e.g. "151 of 1025 Pokemon shown | Generation 1 | all types" -->
   <p id="status"></p>
+  <!-- Clickable type legend (one item per primary type); click to hide/show a type everywhere -->
   <div id="legend"></div>
 
+  <!-- ===== Chart 1: scatterplot ===== -->
   <h2>1. Scatterplot (Project 2)</h2>
   <div class="controls">
+    <!-- Choose which stat goes on each axis, and which ratio controls dot size -->
     <label>X: <select id="xSelect"></select></label>
     <label>Y: <select id="ySelect"></select></label>
     <label>Dot size: <select id="zSelect"></select></label>
   </div>
+  <!-- The chart is drawn into this SVG by renderScatterplot() -->
   <svg id="scatter"></svg>
 
+  <!-- ===== Chart 2: average stat per primary type (bars or dots) ===== -->
   <h2>2. Average by primary type (Project 3)</h2>
   <div class="controls">
+    <!-- Which stat to average. This same dropdown also controls the histogram below. -->
     <label>Stat: <select id="statSelect"></select></label>
+    <!-- Draw the averages as bars or as a dot plot -->
     <label>Mark: <select id="markSelect"><option value="bars">Bars</option><option value="dots">Dot plot</option></select></label>
+    <!-- What to sort by: the average value, or the type name -->
     <label>Sort: <select id="sortSelect"><option value="value">By value</option><option value="alpha">Alphabetical</option></select></label>
+    <!-- Flips the sort direction (the JS updates this button's text to Ascending/Descending) -->
     <button id="sortDirBtn" type="button" title="Flip the sort order">Order: Descending ↓</button>
   </div>
   <svg id="bar"></svg>
 
+  <!-- ===== Chart 3: histogram of the selected stat ===== -->
   <h2>3. Histogram of the selected stat (Project 4)</h2>
   <div class="controls">
+    <!-- Approximate number of bins; the label next to the slider shows its current value -->
     <label>Bins (approx.): <input type="range" id="binRange" min="3" max="40" value="15"> <span id="binLabel">15</span></label>
   </div>
+  <!-- Summary line: observations, bins, mean and median -->
   <p id="histStatus"></p>
   <svg id="hist"></svg>
 
+  <!-- ===== Chart 4: bubble chart of Pokemon per primary type ===== -->
   <h2>4. Pokemon per primary type (bubble chart)</h2>
+  <!-- Caption: total Pokemon, number of types, and what bubble size means -->
   <p id="bubbleStatus"></p>
   <svg id="bubble"></svg>
 </div>
+<!-- Floating tooltip shared by every chart; positioned and filled by the JS on hover -->
 <div id="tooltip" class="hidden"></div>
+<!-- Loaded last so all the elements above already exist when the script runs -->
 <script src="pokedex_code.js"></script>
 </body>
 </html>
