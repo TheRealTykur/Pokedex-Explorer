@@ -10,7 +10,7 @@
 <body>
 <div id="container">
   <h1>Pokedex Explorer v2</h1>
-  <p>Shared filters (generation, type legend) apply to all three charts. Hover any mark for details.</p>
+  <p>Shared filters (generation, type legend) apply to all four charts. Hover any mark for details.</p>
 
   <div id="controls">
     <label>Generation: <select id="genSelect"></select></label>
@@ -31,6 +31,7 @@
     <label>Stat: <select id="statSelect"></select></label>
     <label>Mark: <select id="markSelect"><option value="bars">Bars</option><option value="dots">Dot plot</option></select></label>
     <label>Sort: <select id="sortSelect"><option value="value">By value</option><option value="alpha">Alphabetical</option></select></label>
+    <button id="sortDirBtn" type="button" title="Flip the sort order">Order: Descending ↓</button>
   </div>
   <svg id="bar"></svg>
 
@@ -40,6 +41,10 @@
   </div>
   <p id="histStatus"></p>
   <svg id="hist"></svg>
+
+  <h2>4. Pokemon per primary type (bubble chart)</h2>
+  <p id="bubbleStatus"></p>
+  <svg id="bubble"></svg>
 </div>
 <div id="tooltip" class="hidden"></div>
 <script src="pokedex_code.js"></script>
