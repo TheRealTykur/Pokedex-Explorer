@@ -1,6 +1,7 @@
 // Built from Project 2 (scatterplot, dot size, trend line) plus:
 //   Project 3: aggregation with d3.rollup, scaleBand, sorting, bar chart vs dot plot
 //   Project 4: histogram, hover interval/count, status line, and bin-count selector
+//   Extra: ascending/descending sort button for chart 2, packed bubble chart of Pokemon counts per type
 const chartWidth = 800, chartHeight = 420;
 const chartMargins = { top: 30, right: 30, bottom: 80, left: 70 };
 const plotWidth = chartWidth - chartMargins.left - chartMargins.right;
@@ -39,6 +40,9 @@ const typeBarsGroup = typeSummaryChart.g.append("g");
 const dotPlotGuidesGroup = typeSummaryChart.g.append("g");
 const dotPlotMarkersGroup = typeSummaryChart.g.append("g");
 const histogramBarsGroup = histogramChart.g.append("g");
+const bubbleWidth = 800, bubbleHeight = 520;
+const bubbleGroup = d3.select("#bubble").attr("viewBox", `0 0 ${bubbleWidth} ${bubbleHeight}`).append("g");
+let sortAscending = false;  // chart 2 sort direction (toggled by the button)
 
 function showTooltip(event, tooltipHtml) { tooltip.classed("hidden", false).html(tooltipHtml); moveTooltip(event); }
 function moveTooltip(event) { tooltip.style("left", (event.pageX + 14) + "px").style("top", (event.pageY - 10) + "px"); }
@@ -99,8 +103,18 @@ function initializeExplorer(rows) {
 
 d3.csv("pokedex.csv", d3.autoType).then(initializeExplorer);
 
-["#genSelect", "#xSelect", "#ySelect", "#zSelect", "#statSelect", "#markSelect", "#sortSelect"].forEach(id => d3.select(id).on("change", renderAllCharts));
+["#genSelect", "#xSelect", "#ySelect", "#zSelect", "#statSelect", "#markSelect"].forEach(id => d3.select(id).on("change", renderAllCharts));
 d3.select("#binRange").on("input", renderAllCharts);
+
+function updateSortButtonLabel() {
+  d3.select("#sortDirBtn").text(sortAscending ? "Order: Ascending ↑" : "Order: Descending ↓");
+}
+// Sensible default when switching modes: biggest first for values, A to Z for names
+d3.select("#sortSelect").on("change", () => {
+  sortAscending = getSelectedControlValue("#sortSelect") === "alpha";
+  updateSortButtonLabel(); renderAllCharts();
+});
+d3.select("#sortDirBtn").on("click", () => { sortAscending = !sortAscending; updateSortButtonLabel(); renderAllCharts(); });
 
 function renderAllCharts() {
   const vis = getVisiblePokemon();
@@ -108,7 +122,7 @@ function renderAllCharts() {
   d3.select("#status").text(`${vis.length} of ${data.length} Pokemon shown | ${gen === "all" ? "All generations" : "Generation " + gen} | ` +
     (selectedPrimaryTypes === null ? "all types" : selectedPrimaryTypes.size + " types"));
   d3.select("#legend").selectAll(".legend-item").classed("dimmed", d => selectedPrimaryTypes !== null && !selectedPrimaryTypes.has(d));
-  renderScatterplot(vis); renderTypeSummaryChart(vis); renderHistogram(vis);
+  renderScatterplot(vis); renderTypeSummaryChart(vis); renderHistogram(vis); renderBubbleChart(vis);
 }
 
 // ---------- 1. scatterplot (Project 2) ----------
@@ -166,15 +180,16 @@ function renderTypeSummaryChart(vis) {
   const rows = Array.from(
     d3.rollup(vis, v => ({ mean: d3.mean(v, d => d[key]), min: d3.min(v, d => d[key]), max: d3.max(v, d => d[key]), count: v.length }), d => d.Type_I),
     ([type, s]) => ({ type, ...s }));
-  // SORT: by value (rank is visible) or alphabetically (easy lookup)
-  rows.sort(sortBy === "value" ? (a, b) => b.mean - a.mean : (a, b) => d3.ascending(a.type, b.type));
+  // SORT: by value (rank is visible) or alphabetically (easy lookup), in the direction set by the button
+  const compare = sortBy === "value" ? (a, b) => d3.ascending(a.mean, b.mean) : (a, b) => d3.ascending(a.type, b.type);
+  rows.sort(sortAscending ? compare : (a, b) => compare(b, a));
 
   const x = d3.scaleBand().domain(rows.map(d => d.type)).range([0, plotWidth]).padding(0.25);
   // Bars encode LENGTH, so the baseline must be 0. Dots encode POSITION only, so the axis may zoom in.
   const lo = mark === "bars" ? 0 : Math.max(0, (d3.min(rows, d => d.mean) ?? 0) * 0.9);
   const y = d3.scaleLinear().domain([lo, d3.max(rows, d => d.mean) ?? 1]).nice().range([plotHeight, 0]);
 
-  typeSummaryChart.xAxisG.call(d3.axisBottom(x)); rotateCategoryAxisLabels(typeSummaryChart.xAxisG);
+  typeSummaryChart.xAxisG.transition().duration(500).call(d3.axisBottom(x)); rotateCategoryAxisLabels(typeSummaryChart.xAxisG);
   typeSummaryChart.yAxisG.transition().duration(500).call(d3.axisLeft(y));
   typeSummaryChart.xLabel.text("Primary type").attr("y", plotHeight + 72);
   typeSummaryChart.yLabel.text(`Average ${label}` + (mark === "dots" ? " (axis does not start at 0)" : ""));
@@ -234,4 +249,40 @@ function renderHistogram(vis) {
   histogramChart.xAxisG.call(d3.axisBottom(x)); histogramChart.yAxisG.call(d3.axisLeft(y));
   histogramChart.xLabel.text(label).attr("y", plotHeight + 45); histogramChart.yLabel.text("Count (number of Pokemon)");
   d3.select("#histStatus").text(`${label} | ${values.length} observations | ${bins.length} bins | mean ${d3.mean(values).toFixed(1)}, median ${d3.median(values).toFixed(1)}`);
+}
+
+// ---------- 4. bubble chart: number of Pokemon per primary type ----------
+function renderBubbleChart(vis) {
+  // AGGREGATE: count per primary type, biggest first so the largest bubbles pack toward the center
+  const counts = Array.from(d3.rollup(vis, v => v.length, d => d.Type_I), ([type, count]) => ({ type, count }))
+    .sort((a, b) => d3.descending(a.count, b.count));
+  const nodes = counts.length === 0 ? [] :
+    d3.pack().size([bubbleWidth, bubbleHeight]).padding(4)(d3.hierarchy({ children: counts }).sum(d => d.count)).leaves();
+  // Area is proportional to the count (d3.pack sums values into area)
+
+  d3.select("#bubbleStatus").text(nodes.length === 0 ? "No Pokemon match the current filters." :
+    `${vis.length} Pokemon across ${nodes.length} primary types | bubble area = number of Pokemon`);
+
+  const bubbles = bubbleGroup.selectAll(".bubble").data(nodes, d => d.data.type).join(enter => {
+    const g = enter.append("g").attr("class", "bubble").attr("transform", d => `translate(${d.x},${d.y})`);
+    g.append("circle").attr("r", 0).attr("fill", d => color(d.data.type));
+    g.append("text").attr("class", "bubble-label bubble-name");
+    g.append("text").attr("class", "bubble-label bubble-count");
+    return g;
+  });
+
+  bubbles
+    .on("mouseenter", (e, d) => showTooltip(e, `<strong>${d.data.type}</strong><br>Pokemon: ${d.data.count}<br>` +
+      `Share of shown: ${d3.format(".1%")(d.data.count / vis.length)}`))
+    .on("mousemove", moveTooltip).on("mouseleave", hideTooltip);
+
+  bubbles.transition().duration(500).attr("transform", d => `translate(${d.x},${d.y})`);
+  bubbles.select("circle").transition().duration(500).attr("r", d => d.r).attr("fill", d => color(d.data.type));
+
+  // Labels: name + count when the bubble is big enough, count only when small, nothing when tiny
+  bubbles.select(".bubble-name").text(d => d.r >= 26 ? d.data.type : "")
+    .attr("y", "-0.1em").style("font-size", d => Math.min(16, d.r / 3.2) + "px");
+  bubbles.select(".bubble-count").text(d => d.r >= 12 ? d.data.count : "")
+    .attr("y", d => d.r >= 26 ? "1.1em" : "0.35em").style("font-size", d => Math.min(14, Math.max(9, d.r / 3.6)) + "px")
+    .style("font-weight", "normal");
 }
